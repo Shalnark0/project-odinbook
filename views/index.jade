@@ -49,6 +49,7 @@ html(lang="en")
     if user
       span(style="display:flex; height:50px")
         h1 WELCOME BACK #{user.username}
+        a(style="padding:35px 10px", href="/profile") PROFILE
         a(style="padding:35px 10px", href="/log-out") LOG OUT
       div(style="display:flex; justify-content:center")
         form(action="/send-post", method="POST")
@@ -57,6 +58,9 @@ html(lang="en")
             button Make post
       div(style="display:flex;flex-direction:column;align-items:center;")
         each post in posts
+          div(style="display: flex; align-items: center;margin-bottom:-20px")
+              img(src=post.sender.profilePic, alt="Profile Picture", style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;")
+              span #{post.sender.username}
           div(style="width:800px; height:100px;border:2px solid black;margin-top:40px; border-radius:10px;text-wrap:wrap;") #{post.text}
           div(style="display:flex;justify-content:space-between;width:800px")
             span.heart(onclick=`likePost('${post._id}')`)
@@ -68,7 +72,6 @@ html(lang="en")
               form(action=`/add-comment/${post._id}`, method="POST")
                 input(type="text", name="text", placeholder="Add a comment")
                 button(type="submit") Add Comment
-          p(style="margin-top: 7px;") Sent by #{post.sender.username}
       script.
         async function likePost(postId) {
           try {

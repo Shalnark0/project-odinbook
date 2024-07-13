@@ -9,6 +9,7 @@ const LocalStrategy = require("passport-local").Strategy;
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const bcrypt = require('bcryptjs');  // Add bcrypt import
+const multer = require("multer")
 
 require("dotenv").config() 
 
@@ -38,14 +39,30 @@ const User = mongoose.model(
   "User",
   new Schema({
     username: { type: String, required: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    profilePic: { type:String, required: true }
   })
 );
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
+
+const upload = multer({ storage: storage });
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var app = express();
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -158,6 +175,28 @@ app.post('/add-comment/:id', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+app.post('/upload-profile-pic', upload.single('profilePic'), async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    user.profilePic = `/uploads/${req.file.filename}`;
+    await user.save();
+    res.redirect('/profile');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error uploading file');
+  }
+});
+
+// Profile page route
+app.get('/profile', async (req, res) => {
+  const user = await User.findById(req.user._id);  
+  const posts = await Post.find().populate("sender")
+  res.render('profile', { user, posts });
 });
 
 app.get("/log-out", (req, res, next) => {

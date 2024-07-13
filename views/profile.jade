@@ -1,0 +1,49 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    title Profile
+    style.
+      .container-for-profilepic {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 130px;
+        width: 130px;
+        border: 2px solid black;
+        position: relative;
+      }
+      .container-for-profilepic img {
+        max-height: 100%;
+        max-width: 100%;
+      }
+  body
+    if user
+      h1 Profile Page
+      p Username: #{user.username}
+      p Email: #{user.email}
+
+      .container-for-profilepic
+        if user.profilePic
+          img(src=user.profilePic, alt="Profile Picture")
+        else
+          p No profile picture
+
+      form#uploadForm(action="/upload-profile-pic", method="POST", enctype="multipart/form-data")
+        input(type="hidden", name="userId", value=user._id) 
+        input(type="file", name="profilePic", accept="image/*")
+        button(type="submit") Change Profile picture
+      .posts 
+        each post, i in posts 
+            div(style="height:auto;width:100px;text-wrap:wrap") post #{i+1}: #{post.text}
+      a(href="/log-out") Log Out
+
+    else
+      p You are not logged in.
+      a(href="/login") Log In
+
+    script.
+      document.getElementById('uploadForm').addEventListener('submit', function(event) {
+        // You can add some JavaScript here if needed for form submission handling
+      });
