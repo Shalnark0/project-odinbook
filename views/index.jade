@@ -1,0 +1,123 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    title Home
+    style.
+      a {
+        text-decoration: none;
+        transition: 0.2s ease-in-out;
+        padding-bottom: 0;
+      }
+      a:visited {
+        color: black;
+      }
+      a:hover {
+        font-size: 18px;
+      }
+      .heart {
+        position: relative;
+        width: 16px;
+        height: 16px;
+        background-color: red;
+        transform: rotate(-45deg);
+        margin: 10px;
+        transition: transform 0.3s ease-in-out;
+      }
+      .heart::before,
+      .heart::after {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: red;
+      }
+      .heart::before {
+        top: -8px;
+        left: 0;
+      }
+      .heart::after {
+        left: 8px;
+        top: 0;
+      }
+      .heart:hover {
+        transform: rotate(-45deg) scale(1.3);
+      }
+
+  body
+    if user
+      span(style="display:flex; height:50px")
+        h1 WELCOME BACK #{user.username}
+        a(style="padding:35px 10px", href="/log-out") LOG OUT
+      div(style="display:flex; justify-content:center")
+        form(action="/send-post", method="POST")
+          div(style="display:flex;align-items:center;margin-top:100px;margin-left:10px")
+            textarea(name="post", placeholder="Hello...")
+            button Make post
+      div(style="display:flex;flex-direction:column;align-items:center;")
+        each post in posts
+          div(style="width:800px; height:100px;border:2px solid black;margin-top:40px; border-radius:10px;text-wrap:wrap;") #{post.text}
+          div(style="display:flex;justify-content:space-between;width:800px")
+            span.heart(onclick=`likePost('${post._id}')`)
+            p(style="margin-top:7px") Liked by #{post.likes} people
+            p.toggle-comments(data-id=post._id, style="cursor:pointer; text-decoration:underline;") Show Comments
+            .comments(id=`comments-"${post._id}"`, style="display: none;")
+              each comment in post.comments
+                p= `${comment.user.username}: ${comment.text}`
+              form(action=`/add-comment/${post._id}`, method="POST")
+                input(type="text", name="text", placeholder="Add a comment")
+                button(type="submit") Add Comment
+          p(style="margin-top: 7px;") Sent by #{post.sender.username}
+      script.
+        async function likePost(postId) {
+          try {
+            const response = await fetch(`/like-post/${postId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ postId })
+            });
+            if (!response.ok) {
+              throw new Error('Failed to like post');
+            }
+            const data = await response.json();
+            if (data.alreadyLiked) {
+              console.log('Post already liked by this user');
+            } else {
+              console.log('Post liked successfully');
+              // Update UI as needed
+            }
+          } catch (error) {
+            console.error('Error liking post:', error);
+          }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+        const toggleButtons = document.querySelectorAll('.toggle-comments');
+        toggleButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            const commentsDiv = document.getElementById("comments-" + this.dataset.id);
+            if (!commentsDiv) {
+              console.error(`Comments div with id 'comments-${this.dataset.id}' not found`);
+              return;
+            }
+            if (commentsDiv.style.display === 'none' || commentsDiv.style.display === '') {
+              commentsDiv.style.display = 'block';
+              this.textContent = 'Hide Comments';
+            } else {
+              commentsDiv.style.display = 'none';
+              this.textContent = 'Show Comments';
+            }
+          });
+        })})    
+    else
+      h1 please log in
+      form(action="/log-in", method="POST")
+        div
+          label(for="username") Username
+          input(name="username", placeholder="username", type="text")
+        div
+          label(for="password") Password
+          input(name="password", type="password")
+        button(type="submit") Log In
