@@ -40,7 +40,9 @@ const User = mongoose.model(
   new Schema({
     username: { type: String, required: true },
     password: { type: String, required: true },
-    profilePic: { type:String, required: true }
+    profilePic: { type:String, required: true },
+    followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    following: [{ type: Schema.Types.ObjectId, ref: 'User' }]
   })
 );
 
@@ -136,7 +138,6 @@ app.post('/send-post', async (req, res, next) => {
   }
 });
 
-
 app.post('/like-post/:postId', async (req, res) => {
   const { postId } = req.params;
   const userId = req.user._id; // Assuming you have user authentication middleware
@@ -195,8 +196,66 @@ app.post('/upload-profile-pic', upload.single('profilePic'), async (req, res) =>
 // Profile page route
 app.get('/profile', async (req, res) => {
   const user = await User.findById(req.user._id);  
-  const posts = await Post.find().populate("sender")
+  const posts = await Post.find({sender: req.user._id})
   res.render('profile', { user, posts });
+});
+
+app.get("/list-of-users", async(req,res)=>{
+  const users = await User.find().exec()
+  res.render("list-of-users", {users})
+})
+
+app.get('/profile/:id', async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    const posts = await Post.find({ sender: req.params.id }).exec();
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    res.render('profile', { user, posts });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/visit-as-guest', async (req, res) => {
+  // Create a guest user session
+  const guest = { username: 'Guest', isGuest: true };
+  const posts = await Post.find().populate("sender").populate('comments.user').exec();
+  res.render('index', { user: guest, posts }); // Pass guest as user object
+});
+
+app.post('/follow/:id', async (req, res) => {
+  const userId = req.user._id; // ID of the user who is following
+  const followUserId = req.params.id; // ID of the user to be followed
+
+  try {
+    // Find both users
+    const user = await User.findById(userId);
+    const followUser = await User.findById(followUserId);
+
+    if (!user || !followUser) {
+      return res.status(404).send('User not found');
+    }
+
+    // Check if the user is already following the other user
+    if (user.following.includes(followUserId)) {
+      return res.status(400).send('You are already following this user');
+    }
+
+    // Add to the following and followers arrays
+    user.following.push(followUserId);
+    followUser.followers.push(userId);
+
+    // Save both users
+    await user.save();
+    await followUser.save();
+
+    res.redirect(`/profile/${followUserId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error following user');
+  }
 });
 
 app.get("/log-out", (req, res, next) => {

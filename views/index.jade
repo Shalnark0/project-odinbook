@@ -8,6 +8,7 @@ html(lang="en")
         text-decoration: none;
         transition: 0.2s ease-in-out;
         padding-bottom: 0;
+        color:"black"
       }
       a:visited {
         color: black;
@@ -44,34 +45,53 @@ html(lang="en")
       .heart:hover {
         transform: rotate(-45deg) scale(1.3);
       }
-
   body
     if user
-      span(style="display:flex; height:50px")
-        h1 WELCOME BACK #{user.username}
-        a(style="padding:35px 10px", href="/profile") PROFILE
-        a(style="padding:35px 10px", href="/log-out") LOG OUT
-      div(style="display:flex; justify-content:center")
-        form(action="/send-post", method="POST")
-          div(style="display:flex;align-items:center;margin-top:100px;margin-left:10px")
-            textarea(name="post", placeholder="Hello...")
-            button Make post
-      div(style="display:flex;flex-direction:column;align-items:center;")
-        each post in posts
-          div(style="display: flex; align-items: center;margin-bottom:-20px")
-              img(src=post.sender.profilePic, alt="Profile Picture", style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;")
-              span #{post.sender.username}
-          div(style="width:800px; height:100px;border:2px solid black;margin-top:40px; border-radius:10px;text-wrap:wrap;") #{post.text}
-          div(style="display:flex;justify-content:space-between;width:800px")
-            span.heart(onclick=`likePost('${post._id}')`)
-            p(style="margin-top:7px") Liked by #{post.likes} people
-            p.toggle-comments(data-id=post._id, style="cursor:pointer; text-decoration:underline;") Show Comments
-            .comments(id=`comments-"${post._id}"`, style="display: none;")
-              each comment in post.comments
-                p= `${comment.user.username}: ${comment.text}`
-              form(action=`/add-comment/${post._id}`, method="POST")
-                input(type="text", name="text", placeholder="Add a comment")
-                button(type="submit") Add Comment
+      if !user.isGuest
+        span(style="display:flex; height:50px")
+          h1 WELCOME BACK #{user.username}
+          a(style="padding:35px 10px", href="/profile") PROFILE
+          a(style="padding:35px 10px", href="/log-out") LOG OUT
+          a(style="padding:35px 10px", href="/list-of-users") LIST OF USERS
+        div(style="display:flex; justify-content:center")
+          form(action="/send-post", method="POST")
+            div(style="display:flex;align-items:center;margin-top:100px;margin-left:10px")
+              textarea(name="post", placeholder="Hello...")
+              button Make post
+        div(style="display:flex;flex-direction:column;align-items:center;")
+          each post in posts
+            div(style="display: flex; align-items: center;margin-bottom:-20px")
+                img(src=post.sender.profilePic, alt="Profile Picture", style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;")
+                span #{post.sender.username}
+            div(style="width:800px; height:100px;border:2px solid black;margin-top:40px; border-radius:10px;text-wrap:wrap;") #{post.text}
+            div(style="display:flex;justify-content:space-between;width:800px")
+              span.heart(onclick=`likePost('${post._id}')`)
+              p(style="margin-top:7px") Liked by #{post.likes} people
+              p.toggle-comments(data-id=post._id, style="cursor:pointer; text-decoration:underline;") Show Comments
+              .comments(id=`comments-"${post._id}"`, style="display: none;")
+                each comment in post.comments
+                  p= `${comment.user.username}: ${comment.text}`
+                form(action=`/add-comment/${post._id}`, method="POST")
+                  input(type="text", name="text", placeholder="Add a comment")
+                  button(type="submit") Add Comment
+      else  // Handle the case where user is a guest
+        span(style="display:flex; height:50px")
+          h1 Welcome, guest!
+          a(style="padding:35px 10px", href="/") LOG IN
+          a(style="padding:35px 10px", href="/list-of-users") LIST OF USERS
+        div(style="display:flex;flex-direction:column;align-items:center;")
+          each post in posts
+            div(style="display: flex; align-items: center;margin-bottom:-20px")
+                img(src=post.sender.profilePic, alt="Profile Picture", style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;")
+                span #{post.sender.username}
+            div(style="width:800px; height:100px;border:2px solid black;margin-top:40px; border-radius:10px;text-wrap:wrap;") #{post.text}
+            div(style="display:flex;justify-content:space-between;width:800px")
+              span.heart(onclick=`likePost('${post._id}')`)
+              p(style="margin-top:7px") Liked by #{post.likes} people
+              p.toggle-comments(data-id=post._id, style="cursor:pointer; text-decoration:underline;") Show Comments
+              .comments(id=`comments-"${post._id}"`, style="display: none;")
+                each comment in post.comments
+                  p= `${comment.user.username}: ${comment.text}`              
       script.
         async function likePost(postId) {
           try {
@@ -113,7 +133,7 @@ html(lang="en")
               this.textContent = 'Show Comments';
             }
           });
-        })})    
+        })})   
     else
       h1 please log in
       form(action="/log-in", method="POST")
@@ -124,3 +144,8 @@ html(lang="en")
           label(for="password") Password
           input(name="password", type="password")
         button(type="submit") Log In
+      div(style="display: flex;align-items:center")
+        p If you dont have account:
+        a(href="/sign-up", style="margin-left:10px") SIGN UP
+      form(action="/visit-as-guest", method="POST")
+        button Visit as guest

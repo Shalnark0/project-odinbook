@@ -1,0 +1,13 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    title Users
+    style.
+  body
+    h1 Users: 
+    each user in users 
+      div(style="display:flex;align-items:center")
+        img(src=user.profilePic, alt="Profile Picture", style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;")
+        a(href=`/profile/${user._id}`) #{user.username}
+      
