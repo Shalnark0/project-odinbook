@@ -40,7 +40,7 @@ const User = mongoose.model(
   new Schema({
     username: { type: String, required: true },
     password: { type: String, required: true },
-    profilePic: { type:String, required: true },
+    profilePic: { type:String },
     followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: Schema.Types.ObjectId, ref: 'User' }]
   })
@@ -225,35 +225,36 @@ app.post('/visit-as-guest', async (req, res) => {
   res.render('index', { user: guest, posts }); // Pass guest as user object
 });
 
-app.post('/follow/:id', async (req, res) => {
-  const userId = req.user._id; // ID of the user who is following
-  const followUserId = req.params.id; // ID of the user to be followed
-
+app.post('/follow/:userId', async (req, res) => {
   try {
-    // Find both users
-    const user = await User.findById(userId);
-    const followUser = await User.findById(followUserId);
+    const userId = req.params.userId;
+    const currentUserId = req.user._id;
 
-    if (!user || !followUser) {
+    // Find the user to be followed
+    const userToFollow = await User.findById(userId);
+    if (!userToFollow) {
       return res.status(404).send('User not found');
     }
 
-    // Check if the user is already following the other user
-    if (user.following.includes(followUserId)) {
+    // Ensure the current user is not already following the user
+    if (userToFollow.followers.includes(currentUserId)) {
       return res.status(400).send('You are already following this user');
     }
 
-    // Add to the following and followers arrays
-    user.following.push(followUserId);
-    followUser.followers.push(userId);
+    // Add the current user's ID to the followers array of the userToFollow
+    userToFollow.followers.push(currentUserId);
+
+    // Find the current user
+    const currentUser = await User.findById(currentUserId);
+
+    // Add the userToFollow's ID to the following array of the currentUser
+    currentUser.following.push(userId);
 
     // Save both users
-    await user.save();
-    await followUser.save();
-
-    res.redirect(`/profile/${followUserId}`);
-  } catch (err) {
-    console.error(err);
+    await userToFollow.save();
+    await currentUser.save();
+  } catch (error) {
+    console.error('Error following user:', error);
     res.status(500).send('Error following user');
   }
 });

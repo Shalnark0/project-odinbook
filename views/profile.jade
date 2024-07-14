@@ -59,12 +59,21 @@ html(lang="en")
           a(href="/log-out") Log Out
         else
           form(action=`/follow/${user._id}`, method="POST")
-            button(type="submit", onClick=`followUser('${user._id}')`) Follow
+            button(type="submit", onClick=`followUser('${user._id}')`, id="followButton") Follow
           a(href="/list-of-users") Back to User List
       else
         p User not found.
         a(href="/list-of-users") Back to User List
     script.
+      document.addEventListener('DOMContentLoaded', function() {
+      const followButton = document.getElementById('followButton');
+      if (followButton) {
+        followButton.addEventListener('click', function(event) {
+          event.preventDefault();
+          const userId = this.getAttribute('data-user-id');
+          followUser(userId);
+        })
+        }})
       async function followUser(userId) {
         try {
           const response = await fetch(`/follow/${userId}`, {
@@ -82,15 +91,4 @@ html(lang="en")
           }
         } catch (error) {
           console.error('Error following user:', error);
-        }
-      }
-      document.addEventListener('DOMContentLoaded', function() {
-        const followButton = document.querySelector('button[onClick="followUser"]');
-        if (followButton) {
-          followButton.addEventListener('click', function(event) {
-            event.preventDefault();
-            const userId = this.getAttribute('data-user-id');
-            followUser(userId);
-          });
-        }
-      });
+        }}
