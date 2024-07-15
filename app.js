@@ -10,6 +10,8 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const bcrypt = require('bcryptjs');  // Add bcrypt import
 const multer = require("multer")
+const helmet = require("helmet")
+
 
 require("dotenv").config() 
 
@@ -79,6 +81,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));  // Change from 'views' to 'public'
+
+app.use(helmet())
 
 app.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
 app.use(passport.initialize());
