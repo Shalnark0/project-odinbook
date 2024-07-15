@@ -13,11 +13,15 @@ const multer = require("multer")
 
 require("dotenv").config() 
 
-mongoDb = process.env.MONGODB_URL
+const mongoURI = process.env.MONGODB_URI;
 
-mongoose.connect(mongoDb);
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "mongo connection error"));
+if (!mongoURI) {
+  throw new Error('MONGODB_URI environment variable not set');
+}
+
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 const Post = mongoose.model(
   "Post",
