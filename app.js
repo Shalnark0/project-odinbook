@@ -8,7 +8,7 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const bcrypt = require('bcryptjs');  // Add bcrypt import
+const bcrypt = require('bcryptjs'); 
 const multer = require("multer")
 const helmet = require("helmet")
 
