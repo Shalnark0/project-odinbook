@@ -12,6 +12,7 @@ const bcrypt = require('bcryptjs');  // Add bcrypt import
 const multer = require("multer")
 const helmet = require("helmet")
 
+const { RateLimiterMemory } = require("rate-limiter-flexible");
 
 require("dotenv").config() 
 
@@ -72,7 +73,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
@@ -80,7 +80,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));  // Change from 'views' to 'public'
+app.use(express.static(path.join(__dirname, 'public'))); 
 
 app.use(helmet())
 
@@ -88,13 +88,12 @@ app.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Middleware to make user available in templates
+
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
   next();
 });
 
-// Routes
 app.get("/sign-up", (req, res) => res.render("sign-up-form", { title: "Sign up" }));
 
 app.post("/sign-up", async (req, res, next) => {
@@ -126,10 +125,10 @@ app.get("/", async (req, res) => {
 
 app.post('/send-post', async (req, res, next) => {
   if (!req.user) {
-    return res.redirect('/login'); // Ensure user is logged in
+    return res.redirect('/login'); 
   }
 
-  console.log('Form data:', req.body); // Add this line to debug form data
+  console.log('Form data:', req.body); 
 
   try {
     const newPost = new Post({
@@ -138,20 +137,20 @@ app.post('/send-post', async (req, res, next) => {
     });
 
     const savedPost = await newPost.save();
-    console.log('Post saved:', savedPost); // Add this line to confirm the post was saved
+    console.log('Post saved:', savedPost); 
     res.redirect('/');
   } catch (err) {
-    console.error('Error saving post:', err); // Add this line to debug errors
+    console.error('Error saving post:', err);
     next(err);
   }
 });
 
 app.post('/like-post/:postId', async (req, res) => {
   const { postId } = req.params;
-  const userId = req.user._id; // Assuming you have user authentication middleware
+  const userId = req.user._id; 
 
   try {
-    // Check if the user has already liked the post
+    
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
@@ -160,7 +159,6 @@ app.post('/like-post/:postId', async (req, res) => {
       return res.json({ alreadyLiked: true });
     }
 
-    // Update the post with new likes count and add userId to likedBy array
     post.likes += 1;
     post.likedBy.push(userId);
     await post.save();
@@ -175,11 +173,10 @@ app.post('/like-post/:postId', async (req, res) => {
 app.post('/add-comment/:id', async (req, res, next) => {
   try {
     const postId = req.params.id;
-    const comment = { user: req.user._id, text: req.body.text }; // Ensure req.user is populated
+    const comment = { user: req.user._id, text: req.body.text };
     const post = await Post.findById(postId);
     post.comments.push(comment);
     await post.save();
-    // Redirect to the main page after adding the comment
     res.redirect('/');
   } catch (err) {
     next(err);
@@ -201,7 +198,6 @@ app.post('/upload-profile-pic', upload.single('profilePic'), async (req, res) =>
   }
 });
 
-// Profile page route
 app.get('/profile', async (req, res) => {
   const user = await User.findById(req.user._id);  
   const posts = await Post.find({sender: req.user._id})
@@ -227,10 +223,9 @@ app.get('/profile/:id', async (req, res, next) => {
 });
 
 app.post('/visit-as-guest', async (req, res) => {
-  // Create a guest user session
   const guest = { username: 'Guest', isGuest: true };
   const posts = await Post.find().populate("sender").populate('comments.user').exec();
-  res.render('index', { user: guest, posts }); // Pass guest as user object
+  res.render('index', { user: guest, posts }); 
 });
 
 app.post('/follow/:userId', async (req, res) => {
@@ -238,27 +233,22 @@ app.post('/follow/:userId', async (req, res) => {
     const userId = req.params.userId;
     const currentUserId = req.user._id;
 
-    // Find the user to be followed
     const userToFollow = await User.findById(userId);
     if (!userToFollow) {
       return res.status(404).send('User not found');
     }
 
-    // Ensure the current user is not already following the user
+    
     if (userToFollow.followers.includes(currentUserId)) {
       return res.status(400).send('You are already following this user');
     }
 
-    // Add the current user's ID to the followers array of the userToFollow
     userToFollow.followers.push(currentUserId);
 
-    // Find the current user
     const currentUser = await User.findById(currentUserId);
 
-    // Add the userToFollow's ID to the following array of the currentUser
     currentUser.following.push(userId);
 
-    // Save both users
     await userToFollow.save();
     await currentUser.save();
   } catch (error) {
@@ -276,23 +266,18 @@ app.get("/log-out", (req, res, next) => {
   });
 });
 
-// Catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
 
-// Error handler
 app.use(function (err, req, res, next) {
-  // Set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // Render the error page
   res.status(err.status || 500);
   res.render('error', { title: "Error" });
 });
 
-// Passport configuration
 passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {

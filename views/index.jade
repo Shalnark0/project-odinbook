@@ -74,7 +74,7 @@ html(lang="en")
                 form(action=`/add-comment/${post._id}`, method="POST")
                   input(type="text", name="text", placeholder="Add a comment")
                   button(type="submit") Add Comment
-      else  // Handle the case where user is a guest
+      else  
         span(style="display:flex; height:50px")
           h1 Welcome, guest!
           a(style="padding:35px 10px", href="/") LOG IN
@@ -110,7 +110,6 @@ html(lang="en")
               console.log('Post already liked by this user');
             } else {
               console.log('Post liked successfully');
-              // Update UI as needed
             }
           } catch (error) {
             console.error('Error liking post:', error);
