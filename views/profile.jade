@@ -25,6 +25,21 @@ html(lang="en")
         padding: 10px;
         margin-bottom: 10px;
       }
+      .file-input {
+        display: none;
+      }
+      .custom-file-label {
+        display: inline-block;
+        padding: 6px 12px;
+        cursor: pointer;
+        border: 1px solid black;
+        border-radius: 4px;
+        background-color: #f0f0f0;
+        transition: background-color 0.3s;
+      }
+      .custom-file-label:hover {
+        background-color: #d0d0d0;
+      }
   body
     if user.isGuest
       h1 You are a guest
@@ -43,9 +58,10 @@ html(lang="en")
   
         if currentUser && currentUser._id.toString() === user._id.toString()
           form#uploadForm(action="/upload-profile-pic", method="POST", enctype="multipart/form-data")
-            input(type="hidden", name="userId", value=user._id) 
-            input(type="file", name="profilePic", accept="image/*")
-            button(type="submit") Change Profile picture
+            input(type="hidden", name="userId", value=user._id)
+            input(type="file", name="profilePic", accept="image/*", class="file-input", id="profilePicInput")
+            label(for="profilePicInput", class="custom-file-label", style="margin-top:10px") Choose Profile picture
+            button(type="submit", style="margin-left:10px") Upload
         
         p Followers: #{user.followers.length} 
         p Following: #{user.following.length} 

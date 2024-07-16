@@ -4,11 +4,24 @@ html(lang="en")
     meta(charset="UTF-8")
     title Home
     style.
+      body {
+        margin: 0px;
+        height: 100vh;
+        width: 100%;
+      }
+      button {
+        padding: 4px 8px;
+        border-radius: 10px;
+        transition: background-color 0.2s ease-in-out;
+      }
+      button:hover {
+        background-color: wheat;
+      }
       a {
         text-decoration: none;
         transition: 0.2s ease-in-out;
         padding-bottom: 0;
-        color:"black"
+        color: black;
       }
       a:visited {
         color: black;
@@ -65,7 +78,7 @@ html(lang="en")
                 span #{post.sender.username}
             div(style="width:800px; height:100px;border:2px solid black;margin-top:40px; border-radius:10px;text-wrap:wrap;") #{post.text}
             div(style="display:flex;justify-content:space-between;width:800px")
-              span.heart(onclick=`likePost('${post._id}')`)
+              span.heart(data-id=post._id)
               p(style="margin-top:7px") Liked by #{post.likes} people
               p.toggle-comments(data-id=post._id, style="cursor:pointer; text-decoration:underline;") Show Comments
               .comments(id=`comments-"${post._id}"`, style="display: none;")
@@ -92,59 +105,20 @@ html(lang="en")
               .comments(id=`comments-"${post._id}"`, style="display: none;")
                 each comment in post.comments
                   p= `${comment.user.username}: ${comment.text}`              
-      script.
-        async function likePost(postId) {
-          try {
-            const response = await fetch(`/like-post/${postId}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ postId })
-            });
-            if (!response.ok) {
-              throw new Error('Failed to like post');
-            }
-            const data = await response.json();
-            if (data.alreadyLiked) {
-              console.log('Post already liked by this user');
-            } else {
-              console.log('Post liked successfully');
-            }
-          } catch (error) {
-            console.error('Error liking post:', error);
-          }
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-        const toggleButtons = document.querySelectorAll('.toggle-comments');
-        toggleButtons.forEach(button => {
-          button.addEventListener('click', function() {
-            const commentsDiv = document.getElementById("comments-" + this.dataset.id);
-            if (!commentsDiv) {
-              console.error(`Comments div with id 'comments-${this.dataset.id}' not found`);
-              return;
-            }
-            if (commentsDiv.style.display === 'none' || commentsDiv.style.display === '') {
-              commentsDiv.style.display = 'block';
-              this.textContent = 'Hide Comments';
-            } else {
-              commentsDiv.style.display = 'none';
-              this.textContent = 'Show Comments';
-            }
-          });
-        })})   
+      script(src="/javascripts/script.js")
     else
-      h1 please log in
-      form(action="/log-in", method="POST")
-        div
-          label(for="username") Username
-          input(name="username", placeholder="username", type="text")
-        div
-          label(for="password") Password
-          input(name="password", type="password")
-        button(type="submit") Log In
-      div(style="display: flex;align-items:center")
-        p If you dont have account:
-        a(href="/sign-up", style="margin-left:10px") SIGN UP
-      form(action="/visit-as-guest", method="POST")
-        button Visit as guest
+      div(style="width:30%; height: 100%;background-color:red;display:flex;align-items:center;justify-content:center;flex-direction:column")
+        h1 please, log in
+        form(action="/log-in", method="POST", style='display:flex; align-items:center; flex-direction:column')
+          div(style="border:1px solid black")
+            label(for="username") Username:
+            input(name="username", placeholder="username", type="text")
+          div(style="border:1px solid black; margin-top:4px")
+            label(for="password") Password:
+            input(name="password", type="password")
+          button(type="submit", style="margin-top:4px") Log In
+        div(style="display: flex;align-items:center")
+          p If you are new:
+          a(href="/sign-up", style="margin-left:10px") SIGN UP
+        form(action="/visit-as-guest", method="POST")
+          button Visit as guest

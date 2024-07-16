@@ -147,10 +147,8 @@ app.post('/send-post', async (req, res, next) => {
 
 app.post('/like-post/:postId', async (req, res) => {
   const { postId } = req.params;
-  const userId = req.user._id; 
-
+  const userId = req.user._id;
   try {
-    
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
@@ -169,6 +167,7 @@ app.post('/like-post/:postId', async (req, res) => {
     res.status(500).json({ message: 'Failed to like post' });
   }
 });
+
 
 app.post('/add-comment/:id', async (req, res, next) => {
   try {

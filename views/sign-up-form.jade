@@ -3,13 +3,27 @@ html(lang="en")
   head
     meta(charset="UTF-8")
     title Sign Up
-  body
-    h1 Sign Up
-    form(action="", method="POST")
-      div
-        label(for="username") Username
-        input(name="username", placeholder="username", type="text")
-      div
-        label(for="password") Password
-        input(name="password", type="password")
-      button Sign Up
+    style.
+      button{
+        padding: 4px 8px;
+        border-radius:10px;
+        transition: background-color 0.2s ease-in-out;
+      }
+      button:hover{
+        background-color:wheat;
+      }
+      body{
+         margin: 0;
+         height: 100vh;
+         width:100%;
+      }
+  body(style="display:flex;align-items:center;justify-content:center;flex-direction:column")
+      h1 Sign Up
+      form(action="", method="POST", style="display:flex; align-items:center; justify-content:center;flex-direction:column")
+        div(style="border:1px solid black")
+          label(for="username") Username:
+          input(name="username", placeholder="username", type="text")
+        div(style="border:1px solid black;margin-top:3px")
+          label(for="password") Password: 
+          input(name="password", type="password")
+        button(style='margin-top:4px') Sign Up
